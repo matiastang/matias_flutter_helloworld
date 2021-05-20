@@ -1,9 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:english_words/english_words.dart';
 
 void main() {
-  runApp(MyApp());
+  // runApp(MyApp()); // 默认模板
+  runApp(HelloWorld()); // helloworld
 }
 
+/*
+ * 不可变的widget
+ */
+class HelloWorld extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // 使用english_words
+    // final wordPair = WordPair.random();
+    // Material Design 风格
+    return MaterialApp(
+      title: 'Welcome to Flutter',
+      // 导航栏
+      // home: Scaffold(
+      //   appBar: AppBar(
+      //     title: Text('Welcome to Flutter'),
+      //   ),
+      //   body: Center(
+      //     // child: Text('Hello World' + wordPair.asPascalCase),
+      //     child: RandomWords(),
+      //   ),
+      // ),
+      home: RandomWords(),
+    );
+  }
+}
+
+/*
+ * 可变的widget 
+ */
+class RandomWords extends StatefulWidget {
+  @override
+  _RandomWordsState createState() => _RandomWordsState();
+}
+
+class _RandomWordsState extends State<RandomWords> {
+  final _suggestions = <WordPair>[];
+  final _biggerFont = TextStyle(fontSize: 18.0);
+
+  Widget _buildSuggestions() {
+    return ListView.builder(
+        padding: EdgeInsets.all(16.0),
+        itemBuilder: /*1*/ (context, i) {
+          if (i.isOdd) return Divider(); /*2*/
+
+          final index = i ~/ 2; /*3*/
+          if (index >= _suggestions.length) {
+            _suggestions.addAll(generateWordPairs().take(10)); /*4*/
+          }
+          return _buildRow(_suggestions[index]);
+        });
+  }
+
+  Widget _buildRow(WordPair pair) {
+    return ListTile(
+      title: Text(
+        pair.asPascalCase,
+        style: _biggerFont,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 使用english_words
+    // final wordPair = WordPair.random();
+    // return Text(wordPair.asPascalCase);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Startup Name Generator'),
+      ),
+      body: _buildSuggestions(),
+    );
+  }
+}
+
+/*---------默认模板----------*/
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
