@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
+import 'package:url_launcher/url_launcher.dart';
+// Import package
+import 'package:battery_plus/battery_plus.dart';
 
 void main() {
   // runApp(MyApp()); // 默认模板
@@ -27,7 +32,9 @@ class HelloWorld extends StatelessWidget {
       //     child: RandomWords(),
       //   ),
       // ),
-      home: RandomWords(),
+      // home: RandomWords(),
+      // home: DemoPage(),
+      home: BatteryPage(),
     );
   }
 }
@@ -78,6 +85,99 @@ class _RandomWordsState extends State<RandomWords> {
       ),
       body: _buildSuggestions(),
     );
+  }
+}
+
+/*
+ * 跳转到demo界面 
+ */
+class DemoPage extends StatelessWidget {
+  demoURL() {
+    launch('https://flutter.dev');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: ElevatedButton(
+          onPressed: demoURL,
+          child: Text('打开demo界面'),
+        ),
+      ),
+    );
+  }
+}
+
+/*
+* 电量
+*/
+class BatteryPage extends StatefulWidget {
+  @override
+  _BatteryPageState createState() => _BatteryPageState();
+}
+
+class _BatteryPageState extends State<BatteryPage> {
+  // Instantiate it
+  final _battery = Battery();
+
+  // 状态
+  BatteryState? _batteryState;
+  //
+  StreamSubscription<BatteryState>? _batteryStateSubscription;
+
+  @override
+  void initState() {
+    // Access current battery level
+    print(_battery.batteryLevel);
+    // 添加监听
+    // Be informed when the state (full, charging, discharging) changes
+    _batteryStateSubscription =
+        _battery.onBatteryStateChanged.listen((BatteryState state) {
+      // Do something with new state
+      // 改变状态
+      setState(() {
+        _batteryState = state;
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(child: Text('$_batteryState') // 状态
+          ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final batteryLevel = await _battery.batteryLevel;
+          // ignore: unawaited_futures
+          showDialog<void>(
+            context: context,
+            builder: (_) => AlertDialog(
+              content: Text('Battery: $batteryLevel%'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('OK'),
+                )
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    // 移除监听
+    if (_batteryStateSubscription != null) {
+      _batteryStateSubscription!.cancel();
+    }
+    super.dispose();
   }
 }
 
